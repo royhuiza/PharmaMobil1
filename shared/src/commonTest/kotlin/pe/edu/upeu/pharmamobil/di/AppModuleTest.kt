@@ -48,7 +48,7 @@ class AppModuleTest {
     }
 
     private fun grafoCompleto(): Koin = startKoin {
-        modules(dataModule, domainModule, presentationModule, platformModule)
+        modules(networkModule, dataModule, domainModule, presentationModule, platformModule)
     }.koin
 
     @Test
