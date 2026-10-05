@@ -33,6 +33,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pe.edu.upeu.pharmamobil.presentation.components.EstadoVacio
 import pe.edu.upeu.pharmamobil.presentation.components.MensajeExito
 import pe.edu.upeu.pharmamobil.presentation.components.ValidatedTextField
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
 
 @Composable
 fun ProductoScreen(
@@ -51,11 +53,15 @@ fun ProductoScreen(
 
         FormularioProductoCard(
             formulario = uiState.formulario,
+            editando = uiState.editando,
             registrando = uiState.registrando,
+            actualizando = uiState.actualizando,
             onNombreChange = viewModel::onNombreChange,
             onPrecioChange = viewModel::onPrecioChange,
             onStockChange = viewModel::onStockChange,
-            onRegistrar = viewModel::registrar
+            onRegistrar = viewModel::registrar,
+            onActualizar = viewModel::actualizar,
+            onCancelarEdicion = viewModel::cancelarEdicion
         )
 
         uiState.mensajeExito?.let {
@@ -104,7 +110,12 @@ fun ProductoScreen(
                             items = fase.productos,
                             key = { it.id }
                         ) { producto ->
-                            ProductoItem(producto)
+                            ProductoItem(
+                                producto = producto,
+                                eliminando = uiState.eliminandoId == producto.id,
+                                onEditar = { viewModel.editar(producto) },
+                                onEliminar = { viewModel.eliminar(producto) }
+                            )
                         }
                     }
 
@@ -130,11 +141,15 @@ fun ProductoScreen(
 @Composable
 private fun FormularioProductoCard(
     formulario: FormularioProducto,
+    editando: Boolean,
     registrando: Boolean,
+    actualizando: Boolean,
     onNombreChange: (String) -> Unit,
     onPrecioChange: (String) -> Unit,
     onStockChange: (String) -> Unit,
-    onRegistrar: () -> Unit
+    onRegistrar: () -> Unit,
+    onActualizar: () -> Unit,
+    onCancelarEdicion: () -> Unit
 ) {
 
     Card(
@@ -147,7 +162,11 @@ private fun FormularioProductoCard(
         ) {
 
             Text(
-                text = "Registrar producto",
+                text = if (editando) {
+                    "Editar producto"
+                } else {
+                    "Registrar producto"
+                },
                 style = MaterialTheme.typography.titleMedium
             )
 
@@ -186,12 +205,51 @@ private fun FormularioProductoCard(
                 )
             }
 
-            Button(
-                onClick = onRegistrar,
-                enabled = !registrando,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (registrando) "Registrando…" else "Registrar")
+            if (editando) {
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+
+                    OutlinedButton(
+                        onClick = onCancelarEdicion,
+                        enabled = !actualizando,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Cancelar")
+                    }
+
+                    Button(
+                        onClick = onActualizar,
+                        enabled = !actualizando,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            if (actualizando) {
+                                "Actualizando…"
+                            } else {
+                                "Actualizar"
+                            }
+                        )
+                    }
+                }
+
+            } else {
+
+                Button(
+                    onClick = onRegistrar,
+                    enabled = !registrando,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        if (registrando) {
+                            "Registrando…"
+                        } else {
+                            "Registrar"
+                        }
+                    )
+                }
             }
         }
     }
@@ -230,65 +288,101 @@ private fun EncabezadoInventario(
 
 @Composable
 private fun ProductoItem(
-    producto: ProductoUi
+    producto: ProductoUi,
+    eliminando: Boolean,
+    onEditar: () -> Unit,
+    onEliminar: () -> Unit
 ) {
 
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
 
-        Row(
+        Column(
             modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-
-                Icon(
-                    imageVector = Icons.Default.Medication,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .size(20.dp)
-                )
-            }
-
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-
-                Text(
-                    text = producto.nombre,
-                    style = MaterialTheme.typography.titleSmall
-                )
-
-                Text(
-                    text = "${producto.precio}  ·  ${producto.stock}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            if (producto.requiereReposicion) {
 
                 Surface(
-                    shape = MaterialTheme.shapes.small,
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.Medication,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(20.dp)
+                    )
+                }
+
+                Column(
+                    modifier = Modifier.weight(1f)
                 ) {
 
                     Text(
-                        text = "Reponer",
-                        style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.padding(
-                            horizontal = 8.dp,
-                            vertical = 4.dp
+                        text = producto.nombre,
+                        style = MaterialTheme.typography.titleSmall
+                    )
+
+                    Text(
+                        text = "${producto.precio}  ·  ${producto.stock}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (producto.requiereReposicion) {
+
+                    Surface(
+                        shape = MaterialTheme.shapes.small,
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    ) {
+
+                        Text(
+                            text = "Reponer",
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(
+                                horizontal = 8.dp,
+                                vertical = 4.dp
+                            )
                         )
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                TextButton(
+                    onClick = onEditar,
+                    enabled = !eliminando
+                ) {
+                    Text("Editar")
+                }
+
+                TextButton(
+                    onClick = onEliminar,
+                    enabled = !eliminando
+                ) {
+                    Text(
+                        if (eliminando) {
+                            "Eliminando…"
+                        } else {
+                            "Eliminar"
+                        }
                     )
                 }
             }

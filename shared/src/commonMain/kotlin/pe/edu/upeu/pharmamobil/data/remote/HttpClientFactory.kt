@@ -11,22 +11,30 @@ import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import io.ktor.client.plugins.logging.Logger
 
 fun crearHttpClient(
     engine: HttpClientEngine
 ): HttpClient {
     return HttpClient(engine) {
+        expectSuccess = true
         install(ContentNegotiation) {
             json(
                 Json {
                     ignoreUnknownKeys = true
                     prettyPrint = true
                     isLenient = true
+                    encodeDefaults = true
                 }
             )
         }
 
         install(Logging) {
+            logger = object : Logger {
+                override fun log(message: String) {
+                    println("KTOR_LOG: $message")
+                }
+            }
             level = LogLevel.ALL
         }
 

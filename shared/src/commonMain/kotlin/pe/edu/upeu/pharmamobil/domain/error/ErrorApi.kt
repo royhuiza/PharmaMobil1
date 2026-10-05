@@ -1,0 +1,22 @@
+package pe.edu.upeu.pharmamobil.domain.error
+
+sealed interface ErrorApi {
+
+    data class Validacion(
+        val campos: Map<String, String>
+    ) : ErrorApi
+
+    data object NoEncontrado : ErrorApi
+
+    data object Conflicto : ErrorApi
+
+    data object Servidor : ErrorApi
+
+    data object SinConexion : ErrorApi
+
+    data object TiempoAgotado : ErrorApi
+}
+
+class ErrorApiException(
+    val error: ErrorApi
+) : Exception()

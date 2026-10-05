@@ -39,6 +39,41 @@ class ProductoRepositorioEnMemoria : ProductoRepository {
         }
     }
 
+    override suspend fun obtener(id: Long): Producto {
+        delay(RETARDO_LISTADO_MS)
+
+        return candado.withLock {
+            productos.firstOrNull { it.id == id }
+                ?: throw NoSuchElementException("Producto no encontrado")
+        }
+    }
+
+    override suspend fun actualizar(producto: Producto): Producto {
+        delay(RETARDO_REGISTRO_MS)
+
+        return candado.withLock {
+            val indice = productos.indexOfFirst { it.id == producto.id }
+
+            if (indice == -1) {
+                throw NoSuchElementException("Producto no encontrado")
+            }
+
+            productos[indice] = producto
+            producto
+        }
+    }
+
+    override suspend fun eliminar(id: Long) {
+        delay(RETARDO_REGISTRO_MS)
+
+        candado.withLock {
+            val eliminado = productos.removeAll { it.id == id }
+
+            if (!eliminado) {
+                throw NoSuchElementException("Producto no encontrado")
+            }
+        }
+    }
     private companion object {
         const val RETARDO_REGISTRO_MS = 400L
         const val RETARDO_LISTADO_MS = 600L
