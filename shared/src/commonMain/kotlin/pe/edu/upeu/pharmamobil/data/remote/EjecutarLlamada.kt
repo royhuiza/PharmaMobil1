@@ -27,7 +27,7 @@ suspend fun <T> ejecutarLlamada(
         val error = when (e.response.status.value) {
 
             400 -> ErrorApi.Validacion(
-                campos = errorDto?.errores.orEmpty()
+                campos = errorDto?.validationErrors.orEmpty()
             )
 
             404 -> ErrorApi.NoEncontrado
@@ -52,9 +52,6 @@ suspend fun <T> ejecutarLlamada(
         )
 
     } catch (e: Exception) {
-        println("DEBUG_ERROR: ${e::class.simpleName}")
-        println("DEBUG_ERROR: ${e.message}")
-        e.printStackTrace()
 
         throw ErrorApiException(ErrorApi.SinConexion)
     }

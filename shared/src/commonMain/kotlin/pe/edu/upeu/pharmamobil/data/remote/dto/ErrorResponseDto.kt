@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ErrorResponseDto(
-    val mensaje: String? = null,
-    val errores: Map<String, String>? = null
+    val message: String? = null,
+    val validationErrors: Map<String, String>? = null
 )

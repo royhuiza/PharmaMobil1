@@ -28,24 +28,10 @@ class ProductoRepositorioRest(
     }
 
     override suspend fun registrar(producto: Producto): Producto {
-        println("DEBUG_POST: Entrando a registrar()")
-
         val request = producto.aRequestDto(categoriaPorDefecto)
 
-        println(
-            "DEBUG_POST: DTO nombre=${request.nombre}, " +
-                    "precio=${request.precio}, " +
-                    "stock=${request.stock}, " +
-                    "categoriaId=${request.categoriaId}"
-        )
-
         return ejecutarLlamada {
-            println("DEBUG_POST: Antes de api.crear()")
-
             val respuesta = api.crear(request)
-
-            println("DEBUG_POST: POST completado. id=${respuesta.id}")
-
             respuesta.aModeloDominio()
         }
     }
