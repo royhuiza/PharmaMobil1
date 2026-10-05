@@ -209,7 +209,11 @@ fun App() = KoinContext {
                     when (pantallaActual) {
 
                         Screen.Inicio ->
-                            InicioScreen()
+                            InicioScreen(
+                                onNavegar = { destino ->
+                                    pantallaActual = destino
+                                }
+                            )
 
                         Screen.Productos ->
                             ProductoScreen(

@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.LocalPharmacy
 import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.Person
@@ -26,12 +27,45 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import pe.edu.upeu.pharmamobil.navigation.Screen
+
+/** Cada acceso rapido de la portada lleva a uno de los modulos de la app. */
+private data class Opcion(
+    val screen: Screen,
+    val icono: ImageVector,
+    val titulo: String,
+    val descripcion: String
+)
+
+private val OPCIONES = listOf(
+    Opcion(
+        screen = Screen.Productos,
+        icono = Icons.Default.Medication,
+        titulo = "Registrar productos",
+        descripcion = "Da de alta medicamentos con su precio y su stock."
+    ),
+    Opcion(
+        screen = Screen.Clientes,
+        icono = Icons.Default.Person,
+        titulo = "Registrar clientes",
+        descripcion = "Guarda los datos de contacto para la boleta."
+    ),
+    Opcion(
+        screen = Screen.Pedidos,
+        icono = Icons.Default.ShoppingCart,
+        titulo = "Revisar pedidos",
+        descripcion = "Disponible en una próxima sesión del curso."
+    )
+)
 
 @Composable
-fun InicioScreen() {
+fun InicioScreen(
+    onNavegar: (Screen) -> Unit,
+    modifier: Modifier = Modifier
+) {
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
@@ -45,23 +79,17 @@ fun InicioScreen() {
             style = MaterialTheme.typography.titleMedium
         )
 
-        AccesoRapido(
-            icono = Icons.Default.Medication,
-            titulo = "Registrar productos",
-            descripcion = "Da de alta medicamentos con su precio y su stock."
-        )
+        OPCIONES.forEach { opcion ->
 
-        AccesoRapido(
-            icono = Icons.Default.Person,
-            titulo = "Registrar clientes",
-            descripcion = "Guarda los datos de contacto para la boleta."
-        )
-
-        AccesoRapido(
-            icono = Icons.Default.ShoppingCart,
-            titulo = "Revisar pedidos",
-            descripcion = "Disponible en una próxima sesión del curso."
-        )
+            AccesoRapido(
+                icono = opcion.icono,
+                titulo = opcion.titulo,
+                descripcion = opcion.descripcion,
+                onClick = {
+                    onNavegar(opcion.screen)
+                }
+            )
+        }
     }
 }
 
@@ -106,10 +134,12 @@ private fun Portada() {
 private fun AccesoRapido(
     icono: ImageVector,
     titulo: String,
-    descripcion: String
+    descripcion: String,
+    onClick: () -> Unit
 ) {
 
     Card(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth()
     ) {
 
@@ -135,6 +165,7 @@ private fun AccesoRapido(
             }
 
             Column(
+                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
 
@@ -149,6 +180,12 @@ private fun AccesoRapido(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
