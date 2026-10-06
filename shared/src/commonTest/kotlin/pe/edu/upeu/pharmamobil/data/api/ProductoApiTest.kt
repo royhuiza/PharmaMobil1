@@ -37,7 +37,7 @@ class ProductoApiTest {
                         "tamanio": 20,
                         "totalElementos": 1,
                         "totalPaginas": 1,
-                        "esUltima": true
+                        "ultima": true
                     }
                     """.trimIndent()
                 ),
