@@ -59,3 +59,28 @@ Para ejecutar la suite completa en Windows:
 .\gradlew.bat :shared:allTests
 
 Las pruebas verifican inventario vacio, carga de productos, errores de validacion, registro de productos, configuracion de dependencias y solicitudes realizadas mediante Ktor.
+
+## Capacidades nativas
+
+En la Sesion 09 se implementaron capacidades nativas multiplataforma utilizando expect/actual e inyeccion de dependencias.
+
+### Formato de moneda
+
+Se implemento `formatearSoles` mediante `expect/actual`.
+
+- `commonMain`: declaracion comun de `formatearSoles`.
+- `androidMain`: implementacion usando `NumberFormat` y `Locale("es", "PE")`.
+- `iosMain`: implementacion usando `NSNumberFormatter` y `NSLocale("es_PE")`.
+
+La capa de presentacion utiliza esta funcion para mostrar los precios en soles sin depender directamente de APIs de Android o iOS.
+
+### Compartir productos
+
+Se definio la interfaz `Compartidor` en `commonMain`.
+
+- Android: `CompartidorAndroid` mediante `Intent.ACTION_SEND`.
+- iOS: `CompartidorIos` mediante `UIActivityViewController`.
+
+Las implementaciones se registran mediante Koin en el `platformModule` correspondiente a cada plataforma.
+
+En Android se verifico el funcionamiento del selector nativo para compartir la informacion de un producto.
