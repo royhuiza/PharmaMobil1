@@ -14,12 +14,14 @@ import pe.edu.upeu.pharmamobil.domain.usecase.EliminarProductoUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.ListarProductosUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.ProductoInvalidoException
 import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarProductoUseCase
+import pe.edu.upeu.pharmamobil.domain.platform.Compartidor
 
 class ProductoViewModel(
     private val registrarProducto: RegistrarProductoUseCase,
     private val listarProductos: ListarProductosUseCase,
     private val actualizarProducto: ActualizarProductoUseCase,
-    private val eliminarProducto: EliminarProductoUseCase
+    private val eliminarProducto: EliminarProductoUseCase,
+    private val compartidor: Compartidor
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProductoUiState())
@@ -251,6 +253,10 @@ class ProductoViewModel(
         }
     }
 
+    fun compartir(producto: ProductoUi) {
+        val texto = "${producto.nombre} — ${producto.precio} · Stock: ${producto.stock}"
+        compartidor.compartir(texto)
+    }
     private fun manejarErrorFormulario(
         fallo: Throwable,
         registrando: Boolean = _uiState.value.registrando,

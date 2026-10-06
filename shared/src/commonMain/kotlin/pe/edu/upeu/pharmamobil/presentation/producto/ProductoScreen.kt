@@ -113,6 +113,7 @@ fun ProductoScreen(
                             ProductoItem(
                                 producto = producto,
                                 eliminando = uiState.eliminandoId == producto.id,
+                                onCompartir = { viewModel.compartir(producto) },
                                 onEditar = { viewModel.editar(producto) },
                                 onEliminar = { viewModel.eliminar(producto) }
                             )
@@ -290,6 +291,7 @@ private fun EncabezadoInventario(
 private fun ProductoItem(
     producto: ProductoUi,
     eliminando: Boolean,
+    onCompartir: () -> Unit,
     onEditar: () -> Unit,
     onEliminar: () -> Unit
 ) {
@@ -365,6 +367,13 @@ private fun ProductoItem(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
+                TextButton(
+                    onClick = onCompartir,
+                    enabled = !eliminando
+                ) {
+                    Text("Compartir")
+                }
 
                 TextButton(
                     onClick = onEditar,
