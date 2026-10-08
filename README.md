@@ -84,3 +84,53 @@ Se definio la interfaz `Compartidor` en `commonMain`.
 Las implementaciones se registran mediante Koin en el `platformModule` correspondiente a cada plataforma.
 
 En Android se verifico el funcionamiento del selector nativo para compartir la informacion de un producto.
+
+## Código específico de plataforma
+
+PharmaMobil utiliza Kotlin Multiplatform para compartir código entre Android e iOS. Las implementaciones nativas se encuentran separadas por plataforma.
+
+### 1. Formato de moneda (expect/actual)
+
+- commonMain: platform/Formato.kt declara formatearSoles.
+- androidMain: platform/Formato.android.kt utiliza NumberFormat y Locale("es", "PE").
+- iosMain: platform/Formato.ios.kt utiliza NSNumberFormatter y NSLocale("es_PE").
+
+### 2. Compartir productos (interfaz e inyección de dependencias)
+
+- commonMain: domain/platform/Compartidor.kt define la interfaz.
+- androidMain: platform/CompartidorAndroid.kt utiliza Intent.ACTION_SEND.
+- iosMain: platform/CompartidorIos.kt utiliza UIActivityViewController.
+
+Koin selecciona la implementación correspondiente a cada plataforma.
+
+### 3. Información del dispositivo (expect/actual)
+
+- commonMain: platform/InfoDispositivo.kt declara expect class InfoDispositivo.
+- androidMain: platform/InfoDispositivo.android.kt utiliza Build.VERSION.RELEASE.
+- iosMain: platform/InfoDispositivo.ios.kt utiliza UIDevice.currentDevice.systemVersion.
+
+La pantalla Inicio muestra la tarjeta "Acerca del dispositivo".
+En el emulador se verificó Android 13.
+
+### 4. Configuración de dependencias
+
+- androidMain: di/PlatformModule.android.kt configura las dependencias de Android.
+- iosMain: di/PlatformModule.ios.kt configura las dependencias de iOS.
+
+### 5. Aislamiento y compilación
+
+Se comprobó que commonMain no contiene importaciones directas de android.* ni platform.*.
+
+Al desactivar temporalmente InfoDispositivo.android.kt, el compilador mostró:
+
+Expected InfoDispositivo has no actual declaration in module <commonMain> for JVM
+
+Se restauró el archivo y la compilación Android finalizó correctamente.
+
+### 6. Estado de verificación
+
+- Android: compilación y ejecución verificadas.
+- iOS: implementación escrita; prueba pendiente en macOS con Xcode.
+
+Rama: feature/autonoma09-huiza
+
