@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import pe.edu.upeu.pharmamobil.navigation.Screen
+import pe.edu.upeu.pharmamobil.platform.InfoDispositivo
 
 /** Cada acceso rapido de la portada lleva a uno de los modulos de la app. */
 private data class Opcion(
@@ -90,6 +91,7 @@ fun InicioScreen(
                 }
             )
         }
+        InformacionDispositivo()
     }
 }
 
@@ -185,6 +187,38 @@ private fun AccesoRapido(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+@Composable
+private fun InformacionDispositivo() {
+
+    val dispositivo = InfoDispositivo()
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Acerca del dispositivo",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Text(
+                text = "Sistema operativo: ${dispositivo.sistema}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Text(
+                text = "Versión: ${dispositivo.version}",
+                style = MaterialTheme.typography.bodyMedium
             )
         }
     }
