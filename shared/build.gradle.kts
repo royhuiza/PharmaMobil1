@@ -1,4 +1,4 @@
-﻿import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -46,6 +46,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
             implementation(libs.ktor.client.okhttp)
+            implementation("app.cash.sqldelight:android-driver:2.3.2")
             // api: MainApplication (androidApp) usa androidContext() al arrancar Koin.
             api(libs.koin.android)
         }
@@ -108,5 +109,17 @@ sqldelight {
         register("PharmaDb") {
             packageName.set("pe.edu.upeu.pharmamobil.db")
         }
+    }
+}
+tasks.register("verConfiguracionesAndroid") {
+    doLast {
+        project.configurations
+            .filter {
+                it.name.contains("android", ignoreCase = true) &&
+                it.name.contains("compile", ignoreCase = true)
+            }
+            .forEach {
+                println("${it.name} - resolvable: ${it.isCanBeResolved}")
+            }
     }
 }
