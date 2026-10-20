@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+﻿import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
+    id("app.cash.sqldelight") version "2.3.2"
 }
 
 kotlin {
@@ -85,5 +86,27 @@ dependencies {
 tasks.withType<Test>().configureEach {
     testLogging {
         showStandardStreams = true
+    }
+}
+tasks.register("diagnosticarSqlDelight") {
+    doLast {
+        println("SQLDelight aplicado: " +
+            project.plugins.hasPlugin("app.cash.sqldelight"))
+
+        println("Tareas SQLDelight: " +
+            project.tasks.names.filter {
+                it.contains("sqldelight", ignoreCase = true) ||
+                it.contains("pharmadb", ignoreCase = true)
+            })
+    }
+}
+
+
+
+sqldelight {
+    databases {
+        register("PharmaDb") {
+            packageName.set("pe.edu.upeu.pharmamobil.db")
+        }
     }
 }
