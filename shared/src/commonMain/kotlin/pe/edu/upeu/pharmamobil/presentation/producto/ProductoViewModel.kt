@@ -1,8 +1,9 @@
-package pe.edu.upeu.pharmamobil.presentation.producto
+﻿package pe.edu.upeu.pharmamobil.presentation.producto
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -21,35 +22,41 @@ class ProductoViewModel(
     val uiState: StateFlow<ProductoUiState> = _uiState.asStateFlow()
 
     init {
-        cargarProductos()
+        observarProductos()
     }
 
     fun cargarProductos() {
+        // Flow ya observa SQLite automáticamente.
+        // Este método conserva la compatibilidad con el botón Reintentar.
+    }
 
+    private fun observarProductos() {
         viewModelScope.launch {
-
             _uiState.update {
                 it.copy(fase = ProductoUiState.Fase.Cargando)
             }
 
-            val fase = listarProductos().fold(
-                onSuccess = { productos ->
-                    if (productos.isEmpty()) {
+            listarProductos.observar()
+                .catch { fallo ->
+                    _uiState.update {
+                        it.copy(
+                            fase = ProductoUiState.Fase.Error(
+                                fallo.message ?: "No se pudo observar el inventario"
+                            )
+                        )
+                    }
+                }
+                .collect { productos ->
+                    val fase = if (productos.isEmpty()) {
                         ProductoUiState.Fase.SinProductos
                     } else {
                         ProductoUiState.Fase.ConProductos(productos.map { it.aUi() })
                     }
-                },
-                onFailure = { fallo ->
-                    ProductoUiState.Fase.Error(
-                        fallo.message ?: "No se pudo cargar el inventario"
-                    )
-                }
-            )
 
-            _uiState.update {
-                it.copy(fase = fase)
-            }
+                    _uiState.update {
+                        it.copy(fase = fase)
+                    }
+                }
         }
     }
 
@@ -105,7 +112,6 @@ class ProductoViewModel(
                             mensajeExito = "Producto \"${producto.nombre}\" registrado correctamente"
                         )
                     }
-                    cargarProductos()
                 },
                 onFailure = { fallo ->
                     when (fallo) {
@@ -135,3 +141,6 @@ class ProductoViewModel(
         }
     }
 }
+
+
+

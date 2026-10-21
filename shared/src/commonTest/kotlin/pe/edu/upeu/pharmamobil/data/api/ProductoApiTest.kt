@@ -1,4 +1,4 @@
-package pe.edu.upeu.pharmamobil.data.api
+﻿package pe.edu.upeu.pharmamobil.data.api
 
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -8,6 +8,7 @@ import io.ktor.http.headersOf
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.test.runTest
 import pe.edu.upeu.pharmamobil.data.remote.api.ProductoApi
+import pe.edu.upeu.pharmamobil.data.remote.SesionAuth
 import pe.edu.upeu.pharmamobil.data.remote.crearHttpClient
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -47,7 +48,15 @@ class ProductoApiTest {
         }
 
         val client = crearHttpClient(mockEngine)
-        val api = ProductoApi(client, "http://10.0.2.2:8080/api/v1/")
+
+        val sesionAuth = SesionAuth()
+        sesionAuth.guardarToken("token-de-prueba")
+
+        val api = ProductoApi(
+            client,
+            "http://10.0.2.2:8080/api/v1/",
+            sesionAuth
+        )
 
         val resultado = api.listarProductos()
 
@@ -57,3 +66,4 @@ class ProductoApiTest {
         assertEquals(100, resultado.contenido.first().stock)
     }
 }
+

@@ -69,6 +69,9 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation("app.cash.sqldelight:coroutines-extensions:2.3.2")
+            implementation("app.cash.sqldelight:runtime:2.3.2")
+            implementation("app.cash.sqldelight:coroutines-extensions:2.3.2")
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

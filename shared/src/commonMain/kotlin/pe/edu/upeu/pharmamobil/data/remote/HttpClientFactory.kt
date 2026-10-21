@@ -1,4 +1,4 @@
-package pe.edu.upeu.pharmamobil.data.remote
+﻿package pe.edu.upeu.pharmamobil.data.remote
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
@@ -27,7 +27,7 @@ fun crearHttpClient(
         }
 
         install(Logging) {
-            level = LogLevel.ALL
+            level = LogLevel.NONE
         }
 
         install(HttpTimeout) {
@@ -41,3 +41,4 @@ fun crearHttpClient(
         }
     }
 }
+

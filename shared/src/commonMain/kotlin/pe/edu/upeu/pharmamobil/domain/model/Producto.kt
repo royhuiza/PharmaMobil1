@@ -1,10 +1,12 @@
-package pe.edu.upeu.pharmamobil.domain.model
+﻿package pe.edu.upeu.pharmamobil.domain.model
 
 data class Producto(
     val id:Long,
     val nombre:String,
     val precio:Double,
-    val stock: Int
+    val stock: Int,
+    val estado: Boolean = true,
+    val categoriaId: Long? = null
 ) {
 
 
@@ -31,3 +33,4 @@ data class Producto(
         const val STOCK_MINIMO = 10
     }
 }
+

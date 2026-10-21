@@ -1,4 +1,4 @@
-package pe.edu.upeu.pharmamobil.di
+﻿package pe.edu.upeu.pharmamobil.di
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -8,6 +8,7 @@ import kotlinx.coroutines.test.setMain
 import org.koin.core.Koin
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import pe.edu.upeu.pharmamobil.data.repository.ClienteRepositorioEnMemoria
 import pe.edu.upeu.pharmamobil.data.repository.ProductoRepositorioEnMemoria
 import pe.edu.upeu.pharmamobil.domain.repository.ClienteRepository
@@ -48,7 +49,14 @@ class AppModuleTest {
     }
 
     private fun grafoCompleto(): Koin = startKoin {
-        modules(networkModule, dataModule, domainModule, presentationModule, platformModule)
+        modules(
+            module {
+                single<ProductoRepository> { ProductoRepositorioEnMemoria() }
+                single<ClienteRepository> { ClienteRepositorioEnMemoria() }
+            },
+            domainModule,
+            presentationModule
+        )
     }.koin
 
     @Test
@@ -95,3 +103,4 @@ class AppModuleTest {
         koin.get<ClienteViewModel>()
     }
 }
+
