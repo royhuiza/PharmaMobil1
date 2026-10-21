@@ -1,4 +1,4 @@
-package pe.edu.upeu.pharmamobil
+﻿package pe.edu.upeu.pharmamobil
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocalPharmacy
 import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.DrawerValue
@@ -31,11 +32,13 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -50,6 +53,10 @@ import kotlinx.coroutines.launch
 import org.koin.compose.KoinContext
 import org.koin.compose.viewmodel.koinViewModel
 
+import org.koin.compose.koinInject
+import pe.edu.upeu.pharmamobil.data.remote.api.AuthApi
+import pe.edu.upeu.pharmamobil.data.remote.SesionAuth
+import pe.edu.upeu.pharmamobil.presentation.auth.LoginScreen
 import pe.edu.upeu.pharmamobil.navigation.Screen
 import pe.edu.upeu.pharmamobil.presentation.cliente.ClienteScreen
 import pe.edu.upeu.pharmamobil.presentation.components.EstadoVacio
@@ -83,6 +90,25 @@ private val ScreenSaver = Saver<Screen, Int>(
 
 @Composable
 fun App() = KoinContext {
+
+    val authApi: AuthApi = koinInject()
+    val sesionAuth: SesionAuth = koinInject()
+
+    var sesionIniciada by remember {
+        mutableStateOf(sesionAuth.obtenerToken() != null)
+    }
+
+    if (!sesionIniciada) {
+        PharmaMobilTheme(darkTheme = false) {
+            LoginScreen(
+                authApi = authApi,
+                onLoginExitoso = {
+                    sesionIniciada = true
+                }
+            )
+        }
+        return@KoinContext
+    }
 
     var pantallaActual by rememberSaveable(stateSaver = ScreenSaver) {
         mutableStateOf<Screen>(Screen.Inicio)
@@ -151,6 +177,29 @@ fun App() = KoinContext {
 
                     HorizontalDivider()
 
+                    TextButton(
+                        onClick = {
+                            sesionAuth.cerrarSesion()
+                            sesionIniciada = false
+                            pantallaActual = Screen.Inicio
+                            scope.launch {
+                                drawerState.close()
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Logout,
+                            contentDescription = null
+                        )
+                        Text(
+                            text = "Cerrar sesión",
+                            modifier = Modifier.padding(start = 12.dp)
+                        )
+                    }
+
                     ModoOscuro(
                         activo = darkTheme,
                         onCambiar = { darkTheme = it }
@@ -185,7 +234,7 @@ fun App() = KoinContext {
 
                                 Icon(
                                     imageVector = Icons.Default.Menu,
-                                    contentDescription = "Abrir menú"
+                                    contentDescription = "Abrir menÃº"
                                 )
                             }
                         },
@@ -224,8 +273,8 @@ fun App() = KoinContext {
                         Screen.Pedidos ->
                             EstadoVacio(
                                 icono = Icons.Default.ShoppingCart,
-                                titulo = "Pedidos en construcción",
-                                descripcion = "Este módulo llega en una próxima sesión del curso.",
+                                titulo = "Pedidos en construcciÃ³n",
+                                descripcion = "Este mÃ³dulo llega en una prÃ³xima sesiÃ³n del curso.",
                                 modifier = Modifier.align(Alignment.Center)
                             )
                     }
@@ -270,7 +319,7 @@ private fun DrawerHeader() {
             )
 
             Text(
-                text = "Gestión farmacéutica",
+                text = "GestiÃ³n farmacÃ©utica",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -321,3 +370,6 @@ private fun tituloDe(
 
     return DESTINOS.first { it.screen == screen }.titulo
 }
+
+
+

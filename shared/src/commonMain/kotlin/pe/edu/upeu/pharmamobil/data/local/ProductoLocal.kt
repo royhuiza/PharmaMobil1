@@ -80,4 +80,29 @@ class ProductoLocal(private val db: PharmaDb) {
                 fila.categoriaId
             )
         }
+
+    fun reemplazarPendiente(
+        idLocal: Long,
+        productoServidor: Producto
+    ) {
+        db.transaction {
+            guardar(productoServidor, pendiente = false)
+            consultas.borrarPorId(idLocal)
+        }
+    }
+
+    fun actualizarCategoria(
+        idProducto: Long,
+        categoriaId: Long
+    ) {
+        require(categoriaId > 0L) {
+            "La categoría debe ser válida"
+        }
+
+        consultas.actualizarCategoria(
+            categoriaId = categoriaId,
+            id = idProducto
+        )
+    }
 }
+

@@ -1,4 +1,4 @@
-package pe.edu.upeu.pharmamobil.data.remote.dto
+﻿package pe.edu.upeu.pharmamobil.data.remote.dto
 
 import kotlinx.serialization.Serializable
 import pe.edu.upeu.pharmamobil.domain.model.Producto
@@ -13,20 +13,22 @@ data class ProductoResponseDto(
     val categoriaId: Long? = null
 )
 
-fun ProductoResponseDto.aModeloDominio(): Producto {
-    return Producto(
+fun ProductoResponseDto.aModeloDominio(): Producto =
+    Producto(
         id = id,
         nombre = nombre,
         precio = precio,
-        stock = stock
+        stock = stock,
+        estado = estado,
+        categoriaId = categoriaId
     )
-}
 
-fun Producto.aResponseDto(): ProductoResponseDto {
-    return ProductoResponseDto(
+fun Producto.aResponseDto(): ProductoResponseDto =
+    ProductoResponseDto(
         id = id,
         nombre = nombre,
         precio = precio,
-        stock = stock
+        stock = stock,
+        estado = estado,
+        categoriaId = categoriaId
     )
-}

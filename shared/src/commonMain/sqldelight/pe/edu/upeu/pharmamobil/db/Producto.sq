@@ -25,3 +25,9 @@ DELETE FROM producto WHERE pendiente = 0;
 
 siguienteIdLocal:
 SELECT COALESCE(MIN(id), 0) FROM producto;
+
+borrarPorId:
+DELETE FROM producto WHERE id = ?;
+
+actualizarCategoria:
+UPDATE producto SET categoriaId = ? WHERE id = ?;
