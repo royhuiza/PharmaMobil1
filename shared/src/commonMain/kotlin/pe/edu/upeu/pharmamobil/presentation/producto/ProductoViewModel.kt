@@ -1,6 +1,7 @@
 ﻿package pe.edu.upeu.pharmamobil.presentation.producto
 
 import androidx.lifecycle.ViewModel
+import pe.edu.upeu.pharmamobil.data.remote.api.CategoriaApi
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -15,7 +16,8 @@ import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarProductoUseCase
 
 class ProductoViewModel(
     private val registrarProducto: RegistrarProductoUseCase,
-    private val listarProductos: ListarProductosUseCase
+    private val listarProductos: ListarProductosUseCase,
+    private val categoriaApi: CategoriaApi
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProductoUiState())
@@ -23,8 +25,49 @@ class ProductoViewModel(
 
     init {
         observarProductos()
+        cargarCategorias()
     }
 
+    fun cargarCategorias() {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(cargandoCategorias = true, errorCategorias = null)
+            }
+
+            try {
+                val categorias = categoriaApi.listarCategorias()
+                    .filter { it.estado }
+                    .map { CategoriaUi(id = it.id, nombre = it.nombre) }
+
+                _uiState.update {
+                    it.copy(
+                        categorias = categorias,
+                        cargandoCategorias = false
+                    )
+                }
+            } catch (fallo: Exception) {
+                _uiState.update {
+                    it.copy(
+                        cargandoCategorias = false,
+                        errorCategorias = fallo.message
+                            ?: "No se pudieron cargar las categorias"
+                    )
+                }
+            }
+        }
+    }
+
+    fun onCategoriaChange(categoriaId: Long) {
+        _uiState.update {
+            it.copy(
+                formulario = it.formulario.copy(
+                    categoriaId = categoriaId,
+                    categoriaError = null
+                ),
+                mensajeExito = null
+            )
+        }
+    }
     fun cargarProductos() {
         // Flow ya observa SQLite automáticamente.
         // Este método conserva la compatibilidad con el botón Reintentar.
@@ -141,6 +184,7 @@ class ProductoViewModel(
         }
     }
 }
+
 
 
 

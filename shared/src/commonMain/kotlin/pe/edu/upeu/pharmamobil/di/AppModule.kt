@@ -7,6 +7,7 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import org.koin.core.qualifier.named
 import pe.edu.upeu.pharmamobil.data.remote.api.AuthApi
+import pe.edu.upeu.pharmamobil.data.remote.api.CategoriaApi
 import pe.edu.upeu.pharmamobil.data.remote.api.ProductoApi
 import pe.edu.upeu.pharmamobil.data.remote.SesionAuth
 import pe.edu.upeu.pharmamobil.data.remote.crearHttpClient
@@ -30,6 +31,7 @@ val networkModule = module {
     single { crearHttpClient(get()) }
     single { ProductoApi(get(), get(named("urlBase")), get()) }
     single { AuthApi(get(), get(named("urlBase")), get()) }
+    single { CategoriaApi(get(), get(named("urlBase")), get()) }
 }
 
 val dataModule = module {
@@ -47,7 +49,7 @@ val domainModule = module {
 }
 
 val presentationModule = module {
-    viewModel { ProductoViewModel(get(), get()) }
+    viewModel { ProductoViewModel(get(), get(), get()) }
     viewModel { ClienteViewModel(get(), get()) }
 }
 
@@ -66,6 +68,8 @@ fun initKoin(configuracionAdicional: KoinApplication.() -> Unit = {}) {
         )
     }
 }
+
+
 
 
 

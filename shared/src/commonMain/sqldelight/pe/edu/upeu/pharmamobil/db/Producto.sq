@@ -31,3 +31,13 @@ DELETE FROM producto WHERE id = ?;
 
 actualizarCategoria:
 UPDATE producto SET categoriaId = ? WHERE id = ?;
+
+actualizarProducto:
+UPDATE producto
+SET nombre = ?,
+    precio = ?,
+    stock = ?,
+    estado = ?,
+    categoriaId = ?,
+    pendiente = 1
+WHERE id = ?;

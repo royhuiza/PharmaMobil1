@@ -91,6 +91,20 @@ class ProductoLocal(private val db: PharmaDb) {
         }
     }
 
+    fun actualizarProducto(producto: Producto) {
+        require(producto.id != 0L) {
+            "El producto debe tener un ID válido"
+        }
+
+        consultas.actualizarProducto(
+            nombre = producto.nombre,
+            precio = producto.precio,
+            stock = producto.stock.toLong(),
+            estado = if (producto.estado) 1L else 0L,
+            categoriaId = producto.categoriaId,
+            id = producto.id
+        )
+    }
     fun actualizarCategoria(
         idProducto: Long,
         categoriaId: Long
@@ -105,4 +119,5 @@ class ProductoLocal(private val db: PharmaDb) {
         )
     }
 }
+
 
