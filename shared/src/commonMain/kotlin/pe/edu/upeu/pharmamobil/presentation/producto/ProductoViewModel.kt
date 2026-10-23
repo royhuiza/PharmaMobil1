@@ -12,13 +12,20 @@ import kotlinx.coroutines.launch
 import pe.edu.upeu.pharmamobil.domain.usecase.ListarProductosUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.ProductoInvalidoException
 import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarProductoUseCase
+import pe.edu.upeu.pharmamobil.domain.model.Producto
+import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
+import pe.edu.upeu.pharmamobil.platform.CompartirProducto
+
 
 
 class ProductoViewModel(
     private val registrarProducto: RegistrarProductoUseCase,
     private val listarProductos: ListarProductosUseCase,
-    private val categoriaApi: CategoriaApi
+    private val categoriaApi: CategoriaApi,
+    private val productoRepository: ProductoRepository,
+    private val compartirProducto: CompartirProducto
 ) : ViewModel() {
+
 
     private val _uiState = MutableStateFlow(ProductoUiState())
     val uiState: StateFlow<ProductoUiState> = _uiState.asStateFlow()
@@ -145,7 +152,7 @@ class ProductoViewModel(
             registrarProducto(
                 nombre = formulario.nombre,
                 precio = formulario.precio,
-                stock = formulario.stock
+                stock = formulario.stock, categoriaId = formulario.categoriaId
             ).fold(
                 onSuccess = { producto ->
                     _uiState.update {
@@ -183,7 +190,177 @@ class ProductoViewModel(
             )
         }
     }
+
+    fun editar(producto: Producto) {
+        _uiState.update {
+            it.copy(
+                productoEditandoId = producto.id,
+                formulario = FormularioProducto(
+                    nombre = producto.nombre,
+                    precio = producto.precio.toString(),
+                    stock = producto.stock.toString(),
+                    categoriaId = producto.categoriaId
+                ),
+                mensajeExito = null,
+                mensajeError = null
+            )
+        }
+    }
+
+    fun cancelarEdicion() {
+        _uiState.update {
+            it.copy(
+                productoEditandoId = null,
+                formulario = FormularioProducto(),
+                mensajeError = null
+            )
+        }
+    }
+
+    fun actualizar() {
+        val estado = _uiState.value
+        val id = estado.productoEditandoId ?: return
+
+        if (estado.actualizando) return
+
+        val formulario = estado.formulario
+        val nombre = formulario.nombre.trim()
+        val precio = formulario.precio.toDoubleOrNull()
+        val stock = formulario.stock.toIntOrNull()
+
+        if (nombre.isBlank() || precio == null || precio <= 0.0 ||
+            !precio.isFinite() || stock == null || stock < 0
+        ) {
+            _uiState.update {
+                it.copy(
+                    mensajeError = "Verifica el nombre, precio y stock."
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    actualizando = true,
+                    mensajeError = null
+                )
+            }
+
+            try {
+                val original = productoRepository.listar()
+                    .firstOrNull { it.id == id }
+                    ?: error("Producto no encontrado")
+
+                productoRepository.actualizar(
+                    original.copy(
+                        nombre = nombre,
+                        precio = precio,
+                        stock = stock,
+                        categoriaId = formulario.categoriaId
+                    )
+                )
+
+                _uiState.update {
+                    it.copy(
+                        actualizando = false,
+                        productoEditandoId = null,
+                        formulario = FormularioProducto(),
+                        mensajeExito = "Producto actualizado correctamente"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        actualizando = false,
+                        mensajeError = e.message
+                            ?: "No se pudo actualizar el producto"
+                    )
+                }
+            }
+        }
+    }
+
+    fun solicitarEliminar(id: Long) {
+        _uiState.update {
+            it.copy(
+                productoPendienteEliminarId = id,
+                mensajeError = null
+            )
+        }
+    }
+
+    fun cancelarEliminar() {
+        _uiState.update {
+            it.copy(productoPendienteEliminarId = null)
+        }
+    }
+
+    fun confirmarEliminar() {
+        val id = _uiState.value.productoPendienteEliminarId ?: return
+
+        if (_uiState.value.eliminandoId != null) return
+
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    eliminandoId = id,
+                    productoPendienteEliminarId = null,
+                    mensajeError = null
+                )
+            }
+
+            try {
+                productoRepository.eliminar(id)
+
+                _uiState.update {
+                    it.copy(
+                        eliminandoId = null,
+                        mensajeExito = "Producto eliminado correctamente"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        eliminandoId = null,
+                        mensajeError = e.message
+                            ?: "No se pudo eliminar el producto"
+                    )
+                }
+            }
+        }
+    }
+    fun editarPorId(id: Long) {
+        viewModelScope.launch {
+            try {
+                val producto = productoRepository.listar()
+                    .firstOrNull { it.id == id }
+                    ?: error("Producto no encontrado")
+
+                editar(producto)
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        mensajeError = e.message
+                            ?: "No se pudo abrir el producto"
+                    )
+                }
+            }
+        }
+    }
+
+    fun compartir(producto: ProductoUi) {
+        val texto = buildString {
+            appendLine("Producto: ${producto.nombre}")
+            appendLine("Precio: ${producto.precio}")
+            append("Stock: ${producto.stock}")
+        }
+
+        compartirProducto.compartir(texto)
+    }
+
 }
+
 
 
 

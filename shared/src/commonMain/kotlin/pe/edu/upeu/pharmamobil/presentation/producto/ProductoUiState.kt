@@ -1,21 +1,37 @@
-﻿package pe.edu.upeu.pharmamobil.presentation.producto
+﻿
+package pe.edu.upeu.pharmamobil.presentation.producto
 
 data class ProductoUiState(
     val fase: Fase = Fase.Cargando,
     val formulario: FormularioProducto = FormularioProducto(),
     val registrando: Boolean = false,
     val mensajeExito: String? = null,
+
+    // Categorías
     val categorias: List<CategoriaUi> = emptyList(),
     val cargandoCategorias: Boolean = false,
-    val errorCategorias: String? = null
-) {
+    val errorCategorias: String? = null,
 
-    /** Fases excluyentes del inventario: solo una puede estar activa. */
+    // Edición de productos
+    val productoEditandoId: Long? = null,
+    val actualizando: Boolean = false,
+
+    // Eliminación de productos
+    val productoPendienteEliminarId: Long? = null,
+    val eliminandoId: Long? = null,
+
+    // Mensajes de operaciones
+    val mensajeError: String? = null
+) {
     sealed interface Fase {
         data object Cargando : Fase
         data object SinProductos : Fase
-        data class ConProductos(val productos: List<ProductoUi>) : Fase
-        data class Error(val mensaje: String) : Fase
+        data class ConProductos(
+            val productos: List<ProductoUi>
+        ) : Fase
+        data class Error(
+            val mensaje: String
+        ) : Fase
     }
 }
 

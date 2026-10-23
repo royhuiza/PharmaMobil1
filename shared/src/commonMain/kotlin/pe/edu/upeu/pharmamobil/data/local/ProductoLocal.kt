@@ -105,6 +105,14 @@ class ProductoLocal(private val db: PharmaDb) {
             id = producto.id
         )
     }
+    fun eliminarProductoLocal(id: Long) {
+        require(id < 0L) {
+            "Solo se pueden eliminar directamente productos no sincronizados"
+        }
+
+        consultas.borrarPorId(id)
+    }
+
     fun actualizarCategoria(
         idProducto: Long,
         categoriaId: Long
@@ -119,5 +127,6 @@ class ProductoLocal(private val db: PharmaDb) {
         )
     }
 }
+
 
 

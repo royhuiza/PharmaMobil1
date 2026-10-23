@@ -54,7 +54,7 @@ class ProductoApiTest {
 
         val api = ProductoApi(
             client,
-            "http://10.0.2.2:8080/api/v1/",
+            "http://172.20.10.3:8080/api/v1/",
             sesionAuth
         )
 

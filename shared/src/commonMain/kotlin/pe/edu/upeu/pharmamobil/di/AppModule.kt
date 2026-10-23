@@ -49,7 +49,17 @@ val domainModule = module {
 }
 
 val presentationModule = module {
-    viewModel { ProductoViewModel(get(), get(), get()) }
+
+    viewModel {
+        ProductoViewModel(
+            get(), // RegistrarProductoUseCase
+            get(), // ListarProductosUseCase
+            get(), // CategoriaApi
+            get(), // ProductoRepository
+            get()  // CompartirProducto
+        )
+    }
+
     viewModel { ClienteViewModel(get(), get()) }
 }
 

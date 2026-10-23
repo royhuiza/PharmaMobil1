@@ -30,6 +30,33 @@ class ProductoRepositorioSqlite(
             nuevoProducto
         }
 
+    override suspend fun actualizar(producto: Producto): Producto =
+        mutex.withLock {
+            require(local.listar().any { it.id == producto.id }) {
+                "Producto no encontrado"
+            }
+
+            local.actualizarProducto(producto)
+            producto
+        }
+
+    override suspend fun eliminar(id: Long) {
+        mutex.withLock {
+            require(local.listar().any { it.id == id }) {
+                "Producto no encontrado"
+            }
+
+            if (id < 0L) {
+                local.eliminarProductoLocal(id)
+            } else {
+                error(
+                    "La eliminación de productos sincronizados " +
+                    "estará disponible al implementar la cola de sincronización"
+                )
+            }
+        }
+    }
+
     override fun observar(): Flow<List<Producto>> = local.observar()
 
     override suspend fun listar(): List<Producto> = local.listar()
@@ -85,3 +112,5 @@ class ProductoRepositorioSqlite(
         sincronizados
     }
 }
+
+

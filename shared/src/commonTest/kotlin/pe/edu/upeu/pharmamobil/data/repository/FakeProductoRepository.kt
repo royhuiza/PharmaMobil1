@@ -28,6 +28,22 @@ class FakeProductoRepository(
         return guardado
     }
 
+    override suspend fun actualizar(producto: Producto): Producto {
+        val indice = productos.indexOfFirst { it.id == producto.id }
+        require(indice >= 0) { "Producto no encontrado" }
+
+        productos[indice] = producto
+        flujoProductos.value = productos.toList()
+        return producto
+    }
+
+    override suspend fun eliminar(id: Long) {
+        val eliminado = productos.removeAll { it.id == id }
+        require(eliminado) { "Producto no encontrado" }
+
+        flujoProductos.value = productos.toList()
+    }
+
     override suspend fun listar(): List<Producto> {
         fallaAlListar?.let { throw it }
         return productos.toList()
@@ -42,3 +58,4 @@ class FakeProductoRepository(
         return 0
     }
 }
+

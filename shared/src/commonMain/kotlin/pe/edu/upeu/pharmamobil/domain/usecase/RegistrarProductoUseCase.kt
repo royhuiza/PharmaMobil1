@@ -1,4 +1,4 @@
-package pe.edu.upeu.pharmamobil.domain.usecase
+﻿package pe.edu.upeu.pharmamobil.domain.usecase
 
 import pe.edu.upeu.pharmamobil.domain.model.Producto
 import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
@@ -26,7 +26,8 @@ class RegistrarProductoUseCase(
     suspend operator fun invoke(
         nombre: String,
         precio: String,
-        stock: String
+        stock: String,
+        categoriaId: Long? = null
     ): Result<Producto> {
 
         val errores = ErroresDeProducto(
@@ -45,7 +46,8 @@ class RegistrarProductoUseCase(
                     id = 0L,
                     nombre = nombre.trim(),
                     precio = precio.toDouble(),
-                    stock = stock.toInt()
+                    stock = stock.toInt(),
+                    categoriaId = categoriaId
                 )
             )
         }
@@ -59,7 +61,7 @@ class RegistrarProductoUseCase(
         val precioValor = precio.toDoubleOrNull()
         return when {
             precio.isBlank() -> "El precio es obligatorio"
-            precioValor == null || !precioValor.isFinite() -> "El precio debe ser un número válido"
+            precioValor == null || !precioValor.isFinite() -> "El precio debe ser un nÃºmero vÃ¡lido"
             precioValor <= 0 -> "El precio debe ser mayor a 0"
             else -> null
         }
@@ -69,9 +71,10 @@ class RegistrarProductoUseCase(
         val stockValor = stock.toIntOrNull()
         return when {
             stock.isBlank() -> "El stock es obligatorio"
-            stockValor == null -> "El stock debe ser un número entero"
+            stockValor == null -> "El stock debe ser un nÃºmero entero"
             stockValor < 0 -> "El stock no puede ser negativo"
             else -> null
         }
     }
 }
+

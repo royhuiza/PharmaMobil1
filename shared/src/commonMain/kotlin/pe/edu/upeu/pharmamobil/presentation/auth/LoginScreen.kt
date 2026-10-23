@@ -23,6 +23,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import pe.edu.upeu.pharmamobil.data.remote.api.AuthApi
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.ServerResponseException
+import io.ktor.client.plugins.ResponseException
+import kotlinx.coroutines.CancellationException
 
 @Composable
 fun LoginScreen(
@@ -84,8 +88,22 @@ fun LoginScreen(
                             )
                             contrasena = ""
                             onLoginExitoso()
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: ClientRequestException) {
+                            error = when (e.response.status.value) {
+                                400 -> "Error 400: solicitud de inicio de sesión inválida."
+                                401 -> "Error 401: usuario o contraseña incorrectos."
+                                403 -> "Error 403: acceso denegado."
+                                404 -> "Error 404: no se encontró la ruta de autenticación."
+                                else -> "Error HTTP ${e.response.status.value}."
+                            }
+                        } catch (e: ServerResponseException) {
+                            error = "Error ${e.response.status.value}: problema en el servidor PharmaSoft."
+                        } catch (e: ResponseException) {
+                            error = "Error HTTP ${e.response.status.value}."
                         } catch (e: Exception) {
-                            error = "No se pudo iniciar sesión. Verifica tus datos y la conexión."
+                            error = "Error de conexión o configuración: ${e::class.simpleName ?: "desconocido"}"
                         } finally {
                             cargando = false
                         }

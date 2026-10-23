@@ -29,6 +29,24 @@ class ProductoRepositorioEnMemoria : ProductoRepository {
         }
     }
 
+    override suspend fun actualizar(producto: Producto): Producto =
+        candado.withLock {
+            val indice = productos.indexOfFirst { it.id == producto.id }
+            require(indice >= 0) { "Producto no encontrado" }
+
+            productos[indice] = producto
+            productosFlow.value = productos.toList()
+            producto
+        }
+
+    override suspend fun eliminar(id: Long) {
+        candado.withLock {
+            val eliminado = productos.removeAll { it.id == id }
+            require(eliminado) { "Producto no encontrado" }
+
+            productosFlow.value = productos.toList()
+        }
+    }
     override suspend fun listar(): List<Producto> {
         delay(RETARDO_LISTADO_MS)
 
@@ -49,4 +67,5 @@ class ProductoRepositorioEnMemoria : ProductoRepository {
         return 0
     }
 }
+
 
