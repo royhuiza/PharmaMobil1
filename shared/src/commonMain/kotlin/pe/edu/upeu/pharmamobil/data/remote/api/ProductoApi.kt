@@ -11,6 +11,8 @@ import pe.edu.upeu.pharmamobil.data.remote.SesionAuth
 import pe.edu.upeu.pharmamobil.data.remote.dto.PaginaResponseDto
 import pe.edu.upeu.pharmamobil.data.remote.dto.ProductoRequestDto
 import pe.edu.upeu.pharmamobil.data.remote.dto.ProductoResponseDto
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 
 class ProductoApi(
     private val client: HttpClient,
@@ -30,16 +32,20 @@ class ProductoApi(
             parameter("tamanio", tamanio)
         }.body()
     }
+
     suspend fun registrarProducto(
         producto: ProductoRequestDto
     ): ProductoResponseDto {
+
         val token = sesionAuth.obtenerToken()
             ?: error("Debes iniciar sesión para sincronizar productos")
 
         return client.post("${urlBase}productos") {
             bearerAuth(token)
+            contentType(ContentType.Application.Json)
             setBody(producto)
         }.body()
     }
+
 }
 

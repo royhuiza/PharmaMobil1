@@ -10,6 +10,9 @@ plugins {
 }
 
 kotlin {
+    // Permite ejecutar pruebas JVM desde Windows, sin emulador.
+    jvm()
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -19,39 +22,38 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     android {
-       namespace = "pe.edu.upeu.pharmamobil.shared"
-       compileSdk = libs.versions.android.compileSdk.get().toInt()
-       minSdk = libs.versions.android.minSdk.get().toInt()
-    
-       compilerOptions {
-           jvmTarget = JvmTarget.JVM_11
-       }
-       androidResources {
-           enable = true
-       }
-       withHostTest {
-           isIncludeAndroidResources = true
-       }
-       withDeviceTestBuilder {
-           sourceSetTreeName = "test"
-       }.configure {
-           instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-       }
+        namespace = "pe.edu.upeu.pharmamobil.shared"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_11
+        }
+        androidResources {
+            enable = true
+        }
+        withHostTest {
+            isIncludeAndroidResources = true
+        }
+        withDeviceTestBuilder {
+            sourceSetTreeName = "test"
+        }.configure {
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        }
     }
-    
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
             implementation(libs.ktor.client.okhttp)
             implementation("app.cash.sqldelight:android-driver:2.3.2")
-            // api: MainApplication (androidApp) usa androidContext() al arrancar Koin.
             api(libs.koin.android)
         }
+
         commonMain.dependencies {
-            // api: androidApp llama a initKoin(), cuya firma expone KoinAppDeclaration.
             api(libs.koin.core)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
@@ -69,17 +71,26 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation("app.cash.sqldelight:coroutines-extensions:2.3.2")
             implementation("app.cash.sqldelight:runtime:2.3.2")
             implementation("app.cash.sqldelight:coroutines-extensions:2.3.2")
         }
+
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+        }
+
+        jvmMain.dependencies {
+            implementation(libs.ktor.client.mock)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.ktor.client.mock)
+        }
+
+        // JDBC funciona solo en JVM; no se añade a commonTest/iOS.
+        jvmTest.dependencies {
+            implementation("app.cash.sqldelight:sqlite-driver:2.3.2")
         }
     }
 }
@@ -87,25 +98,24 @@ kotlin {
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
 }
+
 tasks.withType<Test>().configureEach {
     testLogging {
         showStandardStreams = true
     }
 }
+
 tasks.register("diagnosticarSqlDelight") {
     doLast {
         println("SQLDelight aplicado: " +
-            project.plugins.hasPlugin("app.cash.sqldelight"))
-
+                project.plugins.hasPlugin("app.cash.sqldelight"))
         println("Tareas SQLDelight: " +
-            project.tasks.names.filter {
-                it.contains("sqldelight", ignoreCase = true) ||
-                it.contains("pharmadb", ignoreCase = true)
-            })
+                project.tasks.names.filter {
+                    it.contains("sqldelight", ignoreCase = true) ||
+                            it.contains("pharmadb", ignoreCase = true)
+                })
     }
 }
-
-
 
 sqldelight {
     databases {
@@ -114,12 +124,13 @@ sqldelight {
         }
     }
 }
+
 tasks.register("verConfiguracionesAndroid") {
     doLast {
         project.configurations
             .filter {
                 it.name.contains("android", ignoreCase = true) &&
-                it.name.contains("compile", ignoreCase = true)
+                        it.name.contains("compile", ignoreCase = true)
             }
             .forEach {
                 println("${it.name} - resolvable: ${it.isCanBeResolved}")

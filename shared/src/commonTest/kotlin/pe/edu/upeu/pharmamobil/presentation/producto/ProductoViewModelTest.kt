@@ -17,7 +17,19 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-
+import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
+import pe.edu.upeu.pharmamobil.platform.CompartirProducto
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.MockEngineConfig
+import io.ktor.client.engine.mock.respond
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.headersOf
+import io.ktor.serialization.kotlinx.json.json
+import pe.edu.upeu.pharmamobil.data.remote.SesionAuth
+import pe.edu.upeu.pharmamobil.data.remote.api.CategoriaApi
 /**
  * viewModelScope corre sobre Dispatchers.Main, que en una prueba no existe:
  * setMain lo sustituye por un dispatcher de prueba antes de cada caso.
@@ -35,12 +47,51 @@ class ProductoViewModelTest {
         Dispatchers.resetMain()
     }
 
+
     private fun nuevoViewModel(
         repositorio: FakeProductoRepository = FakeProductoRepository()
-    ) = ProductoViewModel(
-        registrarProducto = RegistrarProductoUseCase(repositorio),
-        listarProductos = ListarProductosUseCase(repositorio)
-    )
+    ): ProductoViewModel {
+
+        val sesion = SesionAuth().apply {
+            guardarToken("token-de-prueba")
+        }
+
+        val cliente = HttpClient(MockEngine { request ->
+            respond(
+                content = """[]""",
+                status = HttpStatusCode.OK,
+                headers = headersOf(
+                    HttpHeaders.ContentType,
+                    "application/json"
+                )
+            )
+        }) {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        val categoriaApi = CategoriaApi(
+            client = cliente,
+            urlBase = "http://localhost:8080/api/v1/",
+            sesionAuth = sesion
+        )
+
+        val compartirProducto = object : CompartirProducto {
+            override fun compartir(texto: String) {
+                // No abre aplicaciones externas durante las pruebas.
+            }
+        }
+
+        return ProductoViewModel(
+            registrarProducto = RegistrarProductoUseCase(repositorio),
+            listarProductos = ListarProductosUseCase(repositorio),
+            categoriaApi = categoriaApi,
+            productoRepository = repositorio,
+            compartirProducto = compartirProducto
+        )
+    }
+
 
     @Test
     fun arrancaEnSinProductosCuandoElInventarioEstaVacio() = runTest {
